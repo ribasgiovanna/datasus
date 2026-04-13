@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+
+# Dados brutos e processados (não versionar arquivos grandes)
+data/raw/
+data/processed/
+downloads/
+
+# Scripts temporários de inspeção
+_find_subgrupo.py
+_inspecionar_ids.py
+_map_selects.py
+_map_selects2.py
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+
+# Variáveis de ambiente
+.env
+
+# ChromeDriver cache
+.wdm/
