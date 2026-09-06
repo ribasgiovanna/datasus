@@ -27,10 +27,27 @@ st.markdown("Analise as tendências de doações de sangue. Compare o volume de 
 # ==========================================
 # 1. FUNÇÃO PARA CARREGAR DADOS (DATASUS)
 # ==========================================
+CONSOLIDADO = "Hemoterapia_Parana_CONSOLIDADO.xlsx"
+
+
+def _caminho_consolidado():
+    """Usa o consolidado gerado pela extração (downloads/) e cai para a cópia
+    versionada na raiz do projeto quando ele ainda não existe."""
+    from pathlib import Path
+    try:
+        from config.config import DOWNLOADS_DIR
+        gerado = Path(DOWNLOADS_DIR) / CONSOLIDADO
+        if gerado.exists():
+            return gerado
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent / CONSOLIDADO
+
+
 @st.cache_data
 def load_data():
     # Lendo o dataset real extraído do DATASUS.
-    df = pd.read_excel("Hemoterapia_Parana_CONSOLIDADO.xlsx", engine="openpyxl")
+    df = pd.read_excel(_caminho_consolidado(), engine="openpyxl")
     
     # Tratamento de dados
     # Total pode conter strings ou caracteres como '-'
@@ -202,4 +219,4 @@ with tab2:
 
     st.bar_chart(df_agrupado_mes['Qtd_Doacoes'], color="#cf142b") # Vermelho do Sangue
 
-st.caption("Nota: Estes são dados gerados de demonstração. Para conectar seu dataset real, altere a função `load_data()` no começo do script.")
+st.caption("Nota: dados reais extraídos do TabNet do DATASUS (Produção Ambulatorial SUS, subgrupo 0306 - Hemoterapia, quantidade aprovada), filtrados para o Paraná. O arquivo consolidado é atualizado ao rodar `extrair_todos.py`.")

@@ -1,76 +1,81 @@
-# 🩸 Banco de Sangue DATASUS — extração e análise
+# DATASUS Blood Bank - extraction and analysis
 
-Projeto que **automatiza a extração** de dados de hemoterapia do Paraná no
-**TabNet do DATASUS** (Produção Ambulatorial do SUS), trata os dados e os
-apresenta em um **dashboard**.
+A project that automates the extraction of hemotherapy data for the state of Paraná
+from the DATASUS TabNet (SUS Outpatient Production), treats the data and presents it
+in a dashboard.
 
-> **Projeto em equipe.** Trabalho final do curso de **Programação em Python da Harve**
-> (escola de tecnologia), abril de 2026.
+Team project. Final project of the Python Programming course at Harve (technology
+school), April 2026.
 
-## 👥 Equipe e papéis
+## Team and roles
 
-| Pessoa | Contribuição |
+| Person | Contribution |
 |---|---|
-| **Giovanna Ribas dos Reis** ([@ribasgiovanna](https://github.com/ribasgiovanna)) | Ideia do projeto (uso dos dados de banco de sangue / hemoterapia) e trabalho nos módulos de **extração** (`src/rpa/extrator_datasus.py`) e **tratamento** (`src/processing/tratamento.py`) |
-| **Jackson Beggi** ([@JacksonBeggi](https://github.com/JacksonBeggi)) | Orquestração da RPA, extração paralela e integração |
-| **wingCODING** ([@WingCODING](https://github.com/WingCODING)) | Orquestração da RPA e dashboard |
+| Giovanna Ribas dos Reis ([@ribasgiovanna](https://github.com/ribasgiovanna)) | Project idea (using blood bank / hemotherapy data) and work on the extraction (`src/rpa/extrator_datasus.py`) and treatment (`src/processing/tratamento.py`) modules |
+| Jackson Beggi ([@JacksonBeggi](https://github.com/JacksonBeggi)) | RPA orchestration, parallel extraction and integration |
+| wingCODING ([@WingCODING](https://github.com/WingCODING)) | RPA orchestration and dashboard |
 
-> Este repositório é uma cópia mantida na conta da Giovanna. O histórico de commits
-> ficou concentrado nas contas dos colegas por causa do fluxo de trabalho da época
-> (uma pessoa integrando as branches). Repositórios de origem:
-> [JacksonBeggi/Projeto_Harve](https://github.com/JacksonBeggi) e
-> [WingCODING/datasus](https://github.com/WingCODING/datasus).
+This repository is a copy kept on Giovanna's account. The commit history is concentrated
+in the teammates' accounts because of the workflow at the time (one person merging the
+branches). Origin repositories: [JacksonBeggi/Projeto_Harve](https://github.com/JacksonBeggi)
+and [WingCODING/datasus](https://github.com/WingCODING/datasus).
 
-## ⚙️ O que o projeto faz
+## What it does
 
-1. **Extração (RPA)** — abre o TabNet do DATASUS no navegador (Selenium), seleciona
-   linha, coluna, conteúdo, período, UF e subgrupo de procedimento, e lê a tabela
-   de resultado (`pandas.read_html` com fallback em BeautifulSoup).
-   - Seletores por `id` para contornar caracteres especiais nos `name`
+1. **Extraction (RPA)** - opens the DATASUS TabNet in the browser (Selenium), selects
+   row, column, content, period, state and procedure subgroup, and reads the result
+   table (`pandas.read_html` with a BeautifulSoup fallback).
+   - Selectors by `id` to work around special characters in the `name` attributes
      (`SRegião`, `SMunicípio`)
-   - Waits explícitos em cada interação
-   - Troca de aba por polling de `window_handles` com timeout
-2. **Extração em lote** (`extrair_todos.py`) — roda vários períodos em paralelo
-   (3 workers), com *stagger* entre eles, *checkpoint* (pula o que já foi baixado)
-   e consolidação dos Excel individuais em um arquivo único.
-3. **Tratamento** (`src/processing/tratamento.py`) — remove rodapés de "Total",
-   linhas e colunas vazias, normaliza nomes de colunas e salva o resultado
-   processado em CSV.
-4. **Dashboard** (`frontMain.py`) — visualização em Streamlit para comparar o volume
-   de doações entre meses e anos.
+   - Explicit waits on every interaction
+   - Tab switching by polling `window_handles` with a timeout
+2. **Batch extraction** (`extrair_todos.py`) - runs several periods in parallel
+   (3 workers), with a stagger between them, checkpointing (skips what was already
+   downloaded) and consolidation of the individual Excel files into a single one.
+3. **Treatment** (`src/processing/tratamento.py`) - removes DATASUS "Total" footers,
+   empty rows and columns, normalizes column names and saves the processed result
+   as CSV.
+4. **Dashboard** (`frontMain.py`) - a Streamlit view to compare volume across months
+   and years.
 
-## 🛠️ Tecnologias
+## Data
+
+Real data extracted from the DATASUS TabNet - SUS Outpatient Production, procedure
+subgroup 0306 (Hemotherapy), "approved quantity" metric, filtered to the state of
+Paraná. It reflects approved hemotherapy procedures recorded in SUS, which is an
+indicator related to - but not identical to - blood donations.
+
+## Tech
 
 - Python 3
-- Selenium (automação do navegador)
-- pandas · openpyxl · lxml · BeautifulSoup
+- Selenium (browser automation)
+- pandas, openpyxl, lxml, BeautifulSoup
 - Streamlit (dashboard)
 
-## 📁 Estrutura
+## Structure
 
 ```
 .
-├── main.py                       # extração de um período (ponto de entrada)
-├── extrair_todos.py              # extração paralela de todos os períodos + consolidação
-├── frontMain.py                  # dashboard em Streamlit
+├── main.py                       # single-period extraction (entry point)
+├── extrair_todos.py              # parallel extraction of all periods + consolidation
+├── frontMain.py                  # Streamlit dashboard
 ├── config/
-│   └── config.py                 # URL do TabNet, diretórios, timeouts
+│   └── config.py                 # TabNet URL, directories, timeouts
 └── src/
     ├── rpa/
-    │   └── extrator_datasus.py   # navegação e extração da tabela do DATASUS
+    │   └── extrator_datasus.py   # DATASUS navigation and table extraction
     └── processing/
-        └── tratamento.py         # limpeza e normalização dos dados
+        └── tratamento.py         # data cleaning and normalization
 ```
 
-## ▶️ Como executar
+## Running
 
 ```bash
 pip install -r requirements.txt
 
-python main.py            # extrai um período
-python extrair_todos.py   # extrai todos os períodos em paralelo
+python main.py            # extract one period
+python extrair_todos.py   # extract all periods in parallel
 streamlit run frontMain.py
 ```
 
-A extração usa Selenium e abre um navegador; é necessário ter o WebDriver
-correspondente disponível.
+Extraction uses Selenium and opens a browser; the matching WebDriver must be available.
