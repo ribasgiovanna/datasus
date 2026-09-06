@@ -198,13 +198,14 @@ with tab1:
 
     # Tabela dinâmica para colocar Meses nas Linhas e Anos nas Colunas
     df_pivot = df_filtrado.pivot_table(
-        index='Mês', 
-        columns='Ano', 
-        values='Qtd_Doacoes', 
+        index='Mês',
+        columns='Ano',
+        values='Qtd_Doacoes',
         aggfunc='sum'
-    )
-    # Alterar o formato do índice (Eixo X) para mostrar os nomes abreviados
-    df_pivot.index = df_pivot.index.map(MESES_ABREVIADOS)
+    ).sort_index()
+    # Eixo X com os nomes abreviados, prefixados pelo número do mês para
+    # manter a ordem cronológica (o gráfico ordena o rótulo alfabeticamente)
+    df_pivot.index = [f"{m:02d} {MESES_ABREVIADOS[m]}" for m in df_pivot.index]
 
     st.line_chart(df_pivot)
 
@@ -213,8 +214,8 @@ with tab2:
     st.subheader("Meses com Maior Volume de Doação (Agregado)")
     st.text("Somatório total das doações por mês nos anos selecionados.")
 
-    df_agrupado_mes = df_filtrado.groupby('Mês')['Qtd_Doacoes'].sum().reset_index()
-    df_agrupado_mes['Mês_Abrev'] = df_agrupado_mes['Mês'].map(MESES_ABREVIADOS)
+    df_agrupado_mes = df_filtrado.groupby('Mês')['Qtd_Doacoes'].sum().sort_index().reset_index()
+    df_agrupado_mes['Mês_Abrev'] = df_agrupado_mes['Mês'].map(lambda m: f"{m:02d} {MESES_ABREVIADOS[m]}")
     df_agrupado_mes = df_agrupado_mes.set_index('Mês_Abrev')
 
     st.bar_chart(df_agrupado_mes['Qtd_Doacoes'], color="#cf142b") # Vermelho do Sangue

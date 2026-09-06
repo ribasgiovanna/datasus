@@ -7,6 +7,8 @@ in a dashboard.
 Team project. Final project of the Python Programming course at Harve (technology
 school), April 2026.
 
+![Dashboard](docs/dashboard.png)
+
 ## Team and roles
 
 | Person | Contribution |
