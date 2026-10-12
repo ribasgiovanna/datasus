@@ -1,8 +1,10 @@
-# DATASUS Blood Bank - extraction and analysis
+# DATASUS Hemotherapy PR - extraction and analysis
+
+English · [Português](README.pt-br.md)
 
 A project that automates the extraction of hemotherapy data for the state of Paraná
 from the DATASUS TabNet (SUS Outpatient Production), treats the data and presents it
-in a dashboard.
+in a dashboard. Also known as **Bloody Mary** on the portfolio.
 
 Team project. Final project of the Python Programming course at Harve (technology
 school), April 2026.
