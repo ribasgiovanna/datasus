@@ -1,10 +1,15 @@
-# DATASUS Hemoterapia PR - extração e análise
+# Bloody Mary - dados de hemoterapia do DATASUS, extração e análise
 
 [English](README.md) · Português
 
 Projeto que automatiza a extração dos dados de hemoterapia do Paraná no TabNet do DATASUS
-(Produção Ambulatorial do SUS), trata os dados e os apresenta em um dashboard. No
-portfólio, aparece com o nome **Bloody Mary**.
+(Produção Ambulatorial do SUS), trata os dados e os apresenta em um dashboard.
+
+> **Resumo**
+> - **O que é:** um pipeline de RPA que extrai dados públicos de hemoterapia do DATASUS, trata e apresenta em gráficos.
+> - **Problema:** o TabNet só responde a uma consulta manual por vez, por um formulário lento.
+> - **Minha parte:** a ideia do projeto e os módulos de extração e de tratamento.
+> - **Destaques:** extração paralela com checkpoint, alternativas em cascata e isolamento de falhas por período (veja [Confiabilidade](#confiabilidade)).
 
 Projeto em equipe. Projeto final do curso de Programação em Python da Harve (escola de
 tecnologia), abril de 2026.
@@ -42,6 +47,30 @@ fazia o merge das branches). Repositórios de origem:
    resultado em CSV.
 4. **Dashboard** (`frontMain.py`) - uma visualização em Streamlit para comparar o volume
    entre meses e anos.
+
+## Confiabilidade
+
+O TabNet é um sistema governamental antigo e lento, então o pipeline foi feito para seguir
+em frente quando uma etapa falha, em vez de perder a execução inteira.
+
+| Situação | Como é tratada |
+|---|---|
+| Um período falha (tempo esgotado, erro do navegador) | Cada período roda em um processo próprio; o erro é capturado, o período aparece na lista de falhas no fim e os demais continuam |
+| Um período não retorna linhas | Conta como falha e é informado, em vez de ser salvo vazio sem aviso |
+| A execução é interrompida | Checkpoint: cada período é salvo em um Excel próprio, e uma nova execução pula os períodos que já têm arquivo |
+| Páginas lentas | Esperas explícitas em toda interação (20 s) e limite de 60 s para carregar a página, em vez de pausas fixas |
+| Filtro oculto ou opção não encontrada pelo nome | O filtro é expandido antes; a opção é escolhida pelo texto, depois pelo valor e, por último, via JavaScript |
+| O resultado não abre em nova aba | Verificação periódica de `window_handles` com tempo limite e, se não abrir, segue na aba atual |
+| A tabela não pode ser lida de um jeito | Três estratégias em cascata: download direto do CSV, depois a tabela `tabdados` via BeautifulSoup e, por fim, `pandas.read_html` |
+| Carga no servidor | Só 3 workers, iniciados com 10 s de intervalo |
+| Um arquivo não pode ser lido na consolidação | É ignorado com aviso, e os demais períodos são consolidados |
+| Linhas de "Total" do DATASUS e linhas/colunas vazias | Removidas no tratamento, para não distorcer somas e médias |
+
+**Limitações conhecidas:** períodos com falha não são tentados de novo automaticamente na
+mesma execução (rodar o script outra vez refaz só o que falta); o checkpoint confia que um
+arquivo existente está completo; e uma mudança na estrutura da página do TabNet só é
+percebida quando um seletor falha, porque as colunas de saída ainda não são validadas
+contra um esquema.
 
 ## Dados
 

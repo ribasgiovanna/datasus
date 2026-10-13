@@ -1,10 +1,16 @@
-# DATASUS Hemotherapy PR - extraction and analysis
+# Bloody Mary - DATASUS hemotherapy data, extraction and analysis
 
 English · [Português](README.pt-br.md)
 
 A project that automates the extraction of hemotherapy data for the state of Paraná
 from the DATASUS TabNet (SUS Outpatient Production), treats the data and presents it
-in a dashboard. Also known as **Bloody Mary** on the portfolio.
+in a dashboard.
+
+> **At a glance**
+> - **What:** an RPA pipeline that pulls public hemotherapy data from DATASUS, cleans it and charts it.
+> - **Problem:** the TabNet only answers one manual query at a time, through a slow form.
+> - **My part:** the project idea and the extraction and treatment modules.
+> - **Highlights:** parallel extraction with checkpoints, layered fallbacks and per-period failure isolation (see [Reliability](#reliability)).
 
 Team project. Final project of the Python Programming course at Harve (technology
 school), April 2026.
@@ -41,6 +47,29 @@ and [WingCODING/datasus](https://github.com/WingCODING/datasus).
    as CSV.
 4. **Dashboard** (`frontMain.py`) - a Streamlit view to compare volume across months
    and years.
+
+## Reliability
+
+TabNet is an old, slow government system, so the pipeline is built to keep going when a
+step fails instead of losing the whole run.
+
+| Situation | How it is handled |
+|---|---|
+| A period fails (timeout, browser error) | Each period runs in its own process; the error is caught, the period is listed as failed at the end, and the others continue |
+| A period returns no rows | Counted as a failure and reported, not silently saved as empty |
+| The run is interrupted | Checkpoint: each period is saved as its own Excel file, and a new run skips periods that already have one |
+| Slow pages | Explicit waits on every interaction (20 s) and a 60 s page-load limit, instead of fixed sleeps |
+| Filter hidden or option not found by its label | The filter is expanded first; options are selected by visible text, then by value, then via JavaScript |
+| Result does not open in a new tab | Polling of `window_handles` with a timeout, then falls back to the current tab |
+| Table cannot be read one way | Three strategies in cascade: direct CSV download, then the `tabdados` table via BeautifulSoup, then `pandas.read_html` |
+| Server load | 3 workers only, started 10 s apart |
+| A file cannot be read during consolidation | It is skipped with a warning; the remaining periods are still consolidated |
+| DATASUS "Total" rows and empty rows/columns | Removed during treatment so they do not distort sums and averages |
+
+**Known limitations:** failed periods are not retried automatically within the same run
+(running the script again retries only what is missing); the checkpoint trusts that an
+existing file is complete; and a change in the TabNet page structure is detected only when
+a selector fails, since the output columns are not validated against a schema yet.
 
 ## Data
 

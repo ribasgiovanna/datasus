@@ -780,4 +780,3 @@ if __name__ == "__main__":
     print(f"\n{len(resultados)} registros retornados.")
     for registro in resultados[:5]:
         print(registro)
-    print(resultado[:2000])
